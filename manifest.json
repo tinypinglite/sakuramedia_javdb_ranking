@@ -1,8 +1,12 @@
 {
   "plugin_id": "sakuramedia_javdb_ranking",
   "display_name": "SakuraMedia JavDB 排行榜",
+  "display_name_i18n": {
+    "zh-CN": "SakuraMedia JavDB 排行榜",
+    "en": "SakuraMedia JavDB Rankings"
+  },
   "version": "0.1.5",
-  "host_api_version": 4,
+  "host_api_version": 12,
   "settings_model": "JavdbRankingSettings",
   "requires_python": ">=3.10",
   "author": "tinyping",

@@ -8,6 +8,8 @@ from typing import Any
 
 from src.plugins import PluginRankingBoard, PluginRankingSource
 
+from .translations import text_map
+
 # TOP250 固定子榜；年份维度由 supported_periods_provider 动态补齐。
 TOP250_FIXED_PERIODS = ("all", "uncensored", "censored", "fc2")
 TOP250_START_YEAR = 2008
@@ -60,6 +62,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="playback_all",
             name="热播",
+            name_i18n=text_map("boards.playback_all"),
             supported_periods=("daily", "weekly", "monthly"),
             default_period="daily",
             fetch_numbers=lambda period: provider_holder.get().get_playback_rank_numbers(
@@ -69,6 +72,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="playback_high_score",
             name="高评分",
+            name_i18n=text_map("boards.playback_high_score"),
             supported_periods=("daily", "weekly", "monthly"),
             default_period="daily",
             fetch_numbers=lambda period: provider_holder.get().get_playback_rank_numbers(
@@ -78,6 +82,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="censored",
             name="有码",
+            name_i18n=text_map("boards.censored"),
             supported_periods=("daily", "weekly", "monthly"),
             default_period="daily",
             fetch_numbers=lambda period: provider_holder.get().get_rank_numbers(
@@ -87,6 +92,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="uncensored",
             name="无码",
+            name_i18n=text_map("boards.uncensored"),
             supported_periods=("daily", "weekly", "monthly"),
             default_period="daily",
             fetch_numbers=lambda period: provider_holder.get().get_rank_numbers(
@@ -96,6 +102,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="fc2",
             name="FC2",
+            name_i18n=text_map("boards.fc2"),
             supported_periods=("daily", "weekly", "monthly"),
             default_period="daily",
             fetch_numbers=lambda period: provider_holder.get().get_rank_numbers(
@@ -105,6 +112,7 @@ def build_ranking_source(
         PluginRankingBoard(
             key="top250",
             name="TOP250",
+            name_i18n=text_map("boards.top250"),
             supported_periods=(),
             default_period="all",
             supported_periods_provider=top250_periods,
@@ -116,4 +124,9 @@ def build_ranking_source(
             ),
         ),
     )
-    return PluginRankingSource(source_key="javdb", name="JavDB", boards=boards)
+    return PluginRankingSource(
+        source_key="javdb",
+        name="JavDB",
+        name_i18n=text_map("source.javdb.name"),
+        boards=boards,
+    )

@@ -42,6 +42,16 @@ zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须
 | `fc2` | daily/weekly/monthly | FC2 |
 | `top250` | all/uncensored/censored/fc2 + 当前年..2008 | 需账号；历史年份已有数据不重抓 |
 
+## 多语言
+
+本插件声明 Host API 12，支持 `zh-CN` / `en`：
+
+- 静态文案（插件名、榜单名、任务说明、设置/参数标题）来自 `i18n/zh-CN.json`、
+  `i18n/en.json`，并通过 manifest 的 `display_name_i18n` 与代码中的 `*_i18n`
+  字段提供给宿主。
+- 任务开始进度通过 `context.i18n.t()` 按当前任务语言输出。
+- 新增语言时，在 `i18n/` 增加同名 JSON，并补 manifest 的 `display_name_i18n`。
+
 ## 任务
 
 - 定时任务：`sakuramedia_javdb_ranking_sync`
@@ -49,7 +59,7 @@ zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须
 - 手动任务：`sakuramedia_javdb_ranking_sync_board`
   （`aps sync-javdb-ranking-board`），参数 `board_key` / `period` 均必填，
   可经任务中心 HTTP 手动触发。
-  任务中心表单中两者为中文下拉选择，`period` 选项随 `board_key` 联动；
+  任务中心表单按当前界面语言显示下拉标签，`period` 选项随 `board_key` 联动；
   CLI/HTTP 直接调用时取值：`playback_all`（热播）/ `playback_high_score`（高评分）/
   `censored`（有码）/ `uncensored`（无码）/ `fc2`（FC2）支持
   `daily`（日榜）/ `weekly`（周榜）/ `monthly`（月榜）；

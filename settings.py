@@ -1,13 +1,28 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .translations import text_map
+
 
 class JavdbRankingSettings(BaseModel):
     """排行榜插件私有配置（plugins.settings.sakuramedia_javdb_ranking）。"""
 
     model_config = ConfigDict(extra="forbid")
 
-    javdb_username: str | None = Field(default=None, title="JavDB 用户名")
-    javdb_password: str | None = Field(default=None, title="JavDB 密码", json_schema_extra={"format": "password"})
+    javdb_username: str | None = Field(
+        default=None,
+        title="JavDB 用户名",
+        json_schema_extra={
+            "title_i18n": text_map("settings.javdb_username.title"),
+        },
+    )
+    javdb_password: str | None = Field(
+        default=None,
+        title="JavDB 密码",
+        json_schema_extra={
+            "format": "password",
+            "title_i18n": text_map("settings.javdb_password.title"),
+        },
+    )
 
     @field_validator("javdb_username", "javdb_password")
     @classmethod

@@ -17,12 +17,14 @@ from .boards import build_ranking_source
 from .providers import PerRunProviderHolder
 from .settings import JavdbRankingSettings
 from .sync_jobs import build_jobs
+from .translations import text_map
 
 __version__ = json.loads(
     Path(__file__).with_name("manifest.json").read_text(encoding="utf-8")
 )["version"]
 PLUGIN_ID = "sakuramedia_javdb_ranking"
 DISPLAY_NAME = "SakuraMedia JavDB 排行榜"
+DISPLAY_NAME_I18N = text_map("manifest.display_name")
 
 
 def register(context: PluginContext) -> PluginRegistration:
@@ -43,6 +45,7 @@ def register(context: PluginContext) -> PluginRegistration:
     return PluginRegistration(
         plugin_id=PLUGIN_ID,
         display_name=DISPLAY_NAME,
+        display_name_i18n=DISPLAY_NAME_I18N,
         version=__version__,
         host_api_version=HOST_API_VERSION,
         extensions=(

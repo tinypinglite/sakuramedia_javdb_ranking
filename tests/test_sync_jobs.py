@@ -8,6 +8,11 @@ from sakuramedia_javdb_ranking.sync_jobs import (
     build_jobs,
 )
 
+from src.i18n.locale import (
+    LanguageState,
+    reset_language_state,
+    set_language_state,
+)
 from src.plugins import PluginContext
 
 _STANDARD_BOARD_KEYS = (
@@ -24,6 +29,7 @@ def _context() -> PluginContext:
         plugin_id="sakuramedia_javdb_ranking",
         settings={},
         data_dir=Path("/tmp/javdb-ranking-test"),
+        plugin_root=Path(__file__).resolve().parents[1],
     )
 
 
@@ -35,8 +41,10 @@ def test_build_jobs_declares_cron_and_manual_task():
     ]
     assert jobs[0].default_cron == "45 1 * * *"
     assert jobs[0].handler is not None
+    assert jobs[0].cli_help_i18n["en"].startswith("Sync JavDB rankings")
     assert jobs[1].manual_only is True
     assert jobs[1].params_schema is SyncBoardParams
+    assert jobs[1].cli_help_i18n["en"] == "Manually sync a single JavDB ranking board"
 
 
 def test_sync_board_params_validation():
@@ -63,7 +71,9 @@ def test_sync_board_params_schema_exposes_linked_options():
         "top250",
     ]
     assert board_options[0]["title"] == "热播"
+    assert board_options[0]["title_i18n"]["en"] == "Popular"
     assert all("x-when" not in option for option in board_options)
+    assert properties["board_key"]["title_i18n"]["en"] == "Board"
 
     period_schema = properties["period"]
     assert period_schema["x-options-by"] == "board_key"
@@ -72,10 +82,12 @@ def test_sync_board_params_schema_exposes_linked_options():
     for period, title in (("daily", "日榜"), ("weekly", "周榜"), ("monthly", "月榜")):
         assert period_options[period]["title"] == title
         assert period_options[period]["x-when"] == list(_STANDARD_BOARD_KEYS)
+    assert period_options["daily"]["title_i18n"]["en"] == "Daily"
     assert period_options["all"]["title"] == "全部"
     assert period_options["all"]["x-when"] == ["top250"]
     for year in (period for period in top250_periods() if period.isdigit()):
         assert period_options[year]["title"] == f"{year}年"
+        assert period_options[year]["title_i18n"]["en"] == year
         assert period_options[year]["x-when"] == ["top250"]
 
     assert schema["required"] == ["board_key", "period"]
@@ -95,9 +107,17 @@ def test_sync_all_handler_prepares_run_and_passes_progress():
     class Reporter:
         progress_callback = object()
 
-    jobs[0].handler(Reporter(), {})
+        def __init__(self):
+            self.texts = []
+
+        def emit(self, *, text=None, **kwargs):
+            self.texts.append(text)
+
+    reporter = Reporter()
+    jobs[0].handler(reporter, {})
 
     assert prepared == [1]
+    assert reporter.texts == ["开始同步 JavDB 排行榜"]
     assert list(calls[0]) == ["progress_callback"]
 
 
@@ -112,9 +132,32 @@ def test_sync_board_handler_uses_plugin_source_key():
     prepared = []
     jobs = build_jobs(context, prepare_run=lambda: prepared.append(1))
 
-    jobs[1].handler(None, {"board_key": "censored", "period": "daily"})
+    class Reporter:
+        def __init__(self):
+            self.texts = []
+
+        def emit(self, *, text=None, **kwargs):
+            self.texts.append(text)
+
+    reporter = Reporter()
+    jobs[1].handler(reporter, {"board_key": "censored", "period": "daily"})
 
     assert prepared == [1]
+    assert reporter.texts == ["开始同步榜单 有码"]
     assert calls == [
         {"source_key": "javdb", "board_key": "censored", "period": "daily"}
     ]
+
+
+def test_plugin_i18n_uses_current_language():
+    context = _context()
+    token = set_language_state(LanguageState(header_language="en"))
+    try:
+        assert context.i18n.t("sync.start_all") == "Starting JavDB ranking sync"
+        assert context.i18n.t("boards.censored") == "Censored"
+        assert (
+            context.i18n.t("sync.start_board", board="Censored")
+            == "Starting sync for Censored"
+        )
+    finally:
+        reset_language_state(token)

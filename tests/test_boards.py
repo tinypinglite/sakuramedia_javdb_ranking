@@ -68,6 +68,19 @@ def test_ranking_source_declares_six_boards():
     ]
 
 
+def test_ranking_source_declares_english_names():
+    source = _source_with(FakeProvider())
+    assert source.name_i18n["en"] == "JavDB"
+    assert [board.name_i18n["en"] for board in source.boards] == [
+        "Popular",
+        "Top Rated",
+        "Censored",
+        "Uncensored",
+        "FC2",
+        "TOP250",
+    ]
+
+
 def test_top250_periods_include_fixed_and_historical_years():
     periods = top250_periods()
     assert periods[:4] == TOP250_FIXED_PERIODS

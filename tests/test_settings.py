@@ -22,3 +22,14 @@ def test_credentials_are_stripped():
 def test_unknown_setting_keys_are_rejected():
     with pytest.raises(ValidationError):
         JavdbRankingSettings(javdb_user="user")
+
+
+def test_settings_schema_exposes_english_titles():
+    schema = JavdbRankingSettings.model_json_schema()
+    username = schema["properties"]["javdb_username"]
+    password = schema["properties"]["javdb_password"]
+
+    assert username["title"] == "JavDB 用户名"
+    assert username["title_i18n"]["en"] == "JavDB username"
+    assert password["title_i18n"]["en"] == "JavDB password"
+    assert password["format"] == "password"

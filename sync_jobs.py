@@ -11,6 +11,7 @@ from src.plugins import PluginContext
 from src.scheduler.contracts import JobDefinition
 
 from .boards import top250_periods
+from .translations import text, text_map
 
 # 手动任务参数在任务中心渲染为下拉：oneOf 的 const/title 提供提交值与中文标签，
 # x-options-by 声明周期选项随 board_key 联动，选项用 x-when 标注适用榜单。
@@ -21,56 +22,63 @@ _STANDARD_BOARD_KEYS = (
     "uncensored",
     "fc2",
 )
-_BOARD_TITLES = {
-    "playback_all": "热播",
-    "playback_high_score": "高评分",
-    "censored": "有码",
-    "uncensored": "无码",
-    "fc2": "FC2",
-    "top250": "TOP250",
-}
-_PERIOD_TITLES = {
-    "daily": "日榜",
-    "weekly": "周榜",
-    "monthly": "月榜",
-    "all": "全部",
-    "uncensored": "无码",
-    "censored": "有码",
-    "fc2": "FC2",
-}
 
 
 def _schema_option(
     value: str,
     title: str,
     when: tuple[str, ...] = (),
+    *,
+    title_i18n: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     option: dict[str, Any] = {"const": value, "title": title}
     if when:
         option["x-when"] = list(when)
+    if title_i18n is not None:
+        option["title_i18n"] = title_i18n
     return option
 
 
 def _board_key_options() -> list[dict[str, Any]]:
     return [
-        _schema_option(key, _BOARD_TITLES[key])
+        _schema_option(
+            key,
+            text(f"boards.{key}"),
+            title_i18n=text_map(f"boards.{key}"),
+        )
         for key in (*_STANDARD_BOARD_KEYS, "top250")
     ]
 
 
 def _period_options() -> list[dict[str, Any]]:
     options = [
-        _schema_option(period, _PERIOD_TITLES[period], _STANDARD_BOARD_KEYS)
-        for period in ("daily", "weekly", "monthly")
-    ]
-    options.extend(
         _schema_option(
             period,
-            _PERIOD_TITLES.get(period, f"{period}年"),
-            ("top250",),
+            text(f"periods.{period}"),
+            _STANDARD_BOARD_KEYS,
+            title_i18n=text_map(f"periods.{period}"),
         )
-        for period in top250_periods()
-    )
+        for period in ("daily", "weekly", "monthly")
+    ]
+    year_templates = text_map("periods.year")
+    for period in top250_periods():
+        if period.isdigit():
+            title = text("periods.year").format(year=period)
+            title_i18n = {
+                locale: template.format(year=period)
+                for locale, template in year_templates.items()
+            }
+        else:
+            title = text(f"periods.{period}")
+            title_i18n = text_map(f"periods.{period}")
+        options.append(
+            _schema_option(
+                period,
+                title,
+                ("top250",),
+                title_i18n=title_i18n,
+            )
+        )
     return options
 
 
@@ -81,18 +89,28 @@ class SyncBoardParams(BaseModel):
         min_length=1,
         max_length=64,
         pattern=r"^[a-z][a-z0-9_]*$",
-        title="榜单",
-        description="选择要同步的榜单",
-        json_schema_extra={"oneOf": _board_key_options()},
+        title=text("jobs.sync_board.params.board_key.title"),
+        description=text("jobs.sync_board.params.board_key.description"),
+        json_schema_extra={
+            "oneOf": _board_key_options(),
+            "title_i18n": text_map("jobs.sync_board.params.board_key.title"),
+            "description_i18n": text_map(
+                "jobs.sync_board.params.board_key.description"
+            ),
+        },
     )
     period: str = Field(
         min_length=1,
         max_length=32,
-        title="周期",
-        description="可选项随所选榜单变化",
+        title=text("jobs.sync_board.params.period.title"),
+        description=text("jobs.sync_board.params.period.description"),
         json_schema_extra={
             "oneOf": _period_options(),
             "x-options-by": "board_key",
+            "title_i18n": text_map("jobs.sync_board.params.period.title"),
+            "description_i18n": text_map(
+                "jobs.sync_board.params.period.description"
+            ),
         },
     )
 
@@ -106,12 +124,29 @@ def build_jobs(
 
     def run_sync_all(reporter, _params):
         prepare_run()
+        reporter.emit(
+            text=context.i18n.t(
+                "sync.start_all",
+                default=text("sync.start_all"),
+            )
+        )
         return context.sync_ranking_sources(
             progress_callback=reporter.progress_callback,
         )
 
     def run_sync_board(reporter, params):
         prepare_run()
+        board_label = context.i18n.t(
+            f"boards.{params['board_key']}",
+            default=params["board_key"],
+        )
+        reporter.emit(
+            text=context.i18n.t(
+                "sync.start_board",
+                default=text("sync.start_board").format(board=board_label),
+                board=board_label,
+            )
+        )
         return context.sync_ranking_board(
             source_key="javdb",
             board_key=params["board_key"],
@@ -123,7 +158,8 @@ def build_jobs(
             task_key="sakuramedia_javdb_ranking_sync",
             log_name="javdb-ranking-sync",
             cli_name="sync-javdb-ranking",
-            cli_help="同步 JavDB 排行榜（热播/高评分/有码/无码/FC2/TOP250）",
+            cli_help=text("jobs.sync.cli_help"),
+            cli_help_i18n=text_map("jobs.sync.cli_help"),
             default_cron="45 1 * * *",
             handler=run_sync_all,
         ),
@@ -131,7 +167,8 @@ def build_jobs(
             task_key="sakuramedia_javdb_ranking_sync_board",
             log_name="javdb-ranking-sync-board",
             cli_name="sync-javdb-ranking-board",
-            cli_help="手动同步单个 JavDB 榜单",
+            cli_help=text("jobs.sync_board.cli_help"),
+            cli_help_i18n=text_map("jobs.sync_board.cli_help"),
             manual_only=True,
             params_schema=SyncBoardParams,
             handler=run_sync_board,
