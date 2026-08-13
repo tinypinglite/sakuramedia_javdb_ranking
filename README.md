@@ -75,6 +75,23 @@ sakuramedia_javdb_ranking_sync = "15 3 * * *"
   （`aps sync-javdb-ranking-board`），参数 `board_key` / `period`，
   可经任务中心 HTTP 手动触发。
 
+## 发布版本
+
+打 `v` 开头标签并创建 GitHub Release（正式版，非 prerelease）后，仓库的
+release workflow 会自动校验并生成安装 zip 上传到 Release：
+
+- 校验 tag 格式 `^v[0-9].*`、tag 指向 `main`、`manifest.json` 与 `plugin.py`
+  的版本号和 tag 一致；
+- 生成 `sakuramedia_javdb_ranking-<version>.zip`（排除
+  `.git/tests/缓存/data/.github`）并附加到 Release。
+
+```bash
+# 先把 manifest.json 与 plugin.py 的版本号改成目标版本并提交
+git tag v0.1.0
+git push origin v0.1.0
+# 在 GitHub 上基于该 tag 创建 Release
+```
+
 ## 开发与测试
 
 插件复用宿主 venv 与宿主 `src`（运行 pytest 时通过 `tests/conftest.py`
