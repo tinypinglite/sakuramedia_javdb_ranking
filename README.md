@@ -4,57 +4,32 @@
 本插件通过 `discovery.ranking_source` 扩展点声明 `source_key="javdb"` 的
 6 个榜单，并注册定时同步任务。
 
-## 契约版本
-
-- 宿主契约：`host_api_version=1`，对应宿主 commit `6ebc9f3`
-  （排行榜历史清空并下放账号到插件）。
-- 插件目录名必须等于 `plugin_id`（`sakuramedia_javdb_ranking`），
-  宿主 `plugins check` 与安装均按目录名解析。
-
 ## 安装
 
-方式一：目录直接拷贝/挂载到 `/data/plugins/sakuramedia_javdb_ranking/`。
+通过前端插件管理页上传 zip 安装（系统设置 → 插件）：
 
-方式二：zip 安装（插件根内容打 zip，不含外层目录）：
+1. 打开 SakuraMedia 客户端，进入「系统设置 → 插件」；
+2. 点击「安装插件」，选择 zip 包上传；安装后插件默认自动启用；
+3. 重启 api 与 aps（或重启容器）。
 
-```bash
-cd sakuramedia_javdb_ranking
-zip -r ../sakuramedia_javdb_ranking-0.1.0.zip . \
-  -x '.git/*' -x 'tests/*' -x '__pycache__/*' -x '.venv/*' \
-  -x '.pytest_cache/*' -x 'data/*'
-```
-
-然后在宿主仓库：
-
-```bash
-uv run python -m src.start.commands plugins install ../sakuramedia_javdb_ranking-0.1.0.zip
-uv run python -m src.start.commands plugins enable sakuramedia_javdb_ranking
-```
-
-最后重启 api 与 aps 两个进程。
+zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须包含 `manifest.json`。
+重新上传同 `plugin_id` 的 zip 会替换代码并保留插件 `data/` 运行数据。
 
 ## 配置
 
-```toml
-[plugins]
-enabled = ["sakuramedia_javdb_ranking"]
+在插件管理页（系统设置 → 插件）点击本插件行，按 JSON 编辑并保存：
 
-[plugins.settings.sakuramedia_javdb_ranking]
-javdb_username = "..."
-javdb_password = "..."
+```json
+{
+  "javdb_username": "",
+  "javdb_password": ""
+}
 ```
+
+保存后需重启 api 与 aps（或整个容器）才生效。
 
 账号仅 TOP250 需要：不配置时 TOP250 整榜跳过（`should_fetch` 返回 False），
-其余五个免费榜照常同步；配置后登录失败按普通 target 失败计入 `failed_targets`。
-每次任务运行开始时新建 provider（运行内复用），登录失败只影响当次运行，
-下次运行会自动重试，无需重启进程。
-
-定时节奏沿用宿主原内置任务的 `45 1 * * *`，可用 `plugins.job_crons` 覆盖：
-
-```toml
-[plugins.job_crons.sakuramedia_javdb_ranking]
-sakuramedia_javdb_ranking_sync = "15 3 * * *"
-```
+其余五个免费榜照常同步；
 
 ## 榜单
 
@@ -70,40 +45,7 @@ sakuramedia_javdb_ranking_sync = "15 3 * * *"
 ## 任务
 
 - 定时任务：`sakuramedia_javdb_ranking_sync`
-  （`aps sync-javdb-ranking`），全量同步。
+  （`aps sync-javdb-ranking`），全量同步，默认每天 01:45。
 - 手动任务：`sakuramedia_javdb_ranking_sync_board`
   （`aps sync-javdb-ranking-board`），参数 `board_key` / `period`，
   可经任务中心 HTTP 手动触发。
-
-## 发布版本
-
-打 `v` 开头标签并创建 GitHub Release（正式版，非 prerelease）后，仓库的
-release workflow 会自动校验并生成安装 zip 上传到 Release：
-
-- 校验 tag 格式 `^v[0-9].*`、tag 指向 `main`、`manifest.json` 与 `plugin.py`
-  的版本号和 tag 一致；
-- 生成 `sakuramedia_javdb_ranking-<version>.zip`（排除
-  `.git/tests/缓存/data/.github`）并附加到 Release。
-
-```bash
-# 先把 manifest.json 与 plugin.py 的版本号改成目标版本并提交
-git tag v0.1.0
-git push origin v0.1.0
-# 在 GitHub 上基于该 tag 创建 Release
-```
-
-## 开发与测试
-
-插件复用宿主 venv 与宿主 `src`（运行 pytest 时通过 `tests/conftest.py`
-把 `../SakuraMediaBE/src` 加入 `sys.path`）：
-
-```bash
-../SakuraMediaBE/.venv/bin/python -m pytest -q
-```
-
-宿主侧契约冒烟：
-
-```bash
-cd ../SakuraMediaBE
-uv run python -m src.start.commands plugins check ../sakuramedia_javdb_ranking
-```
