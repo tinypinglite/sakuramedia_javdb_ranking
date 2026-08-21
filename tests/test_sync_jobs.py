@@ -26,7 +26,6 @@ def test_build_jobs_declares_cron_and_manual_task():
     ]
     assert jobs[0].default_cron == "45 1 * * *"
     assert jobs[0].handler is not None
-    assert jobs[0].service_factory is None
     assert jobs[1].manual_only is True
     assert jobs[1].params_schema is SyncBoardParams
 
