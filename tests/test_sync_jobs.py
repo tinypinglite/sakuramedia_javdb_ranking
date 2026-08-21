@@ -2,13 +2,12 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from src.plugins import PluginContext
-
 from sakuramedia_javdb_ranking.sync_jobs import (
     SyncBoardParams,
-    _format_stats,
     build_jobs,
 )
+
+from src.plugins import PluginContext
 
 
 def _context() -> PluginContext:
@@ -26,13 +25,14 @@ def test_build_jobs_declares_cron_and_manual_task():
         "sakuramedia_javdb_ranking_sync_board",
     ]
     assert jobs[0].default_cron == "45 1 * * *"
-    assert jobs[0].service_factory is not None
+    assert jobs[0].handler is not None
+    assert jobs[0].service_factory is None
     assert jobs[1].manual_only is True
     assert jobs[1].params_schema is SyncBoardParams
 
 
 def test_sync_board_params_validation():
-    params = SyncBoardParams(board_key="censored", period="daily")
+    assert SyncBoardParams(board_key="censored", period="daily").period == "daily"
     assert SyncBoardParams(board_key="top250").model_dump() == {
         "board_key": "top250",
         "period": None,
@@ -55,7 +55,7 @@ def test_sync_all_handler_prepares_run_and_passes_progress():
     class Reporter:
         progress_callback = object()
 
-    jobs[0].service_factory(Reporter())
+    jobs[0].handler(Reporter(), {})
 
     assert prepared == [1]
     assert list(calls[0]) == ["progress_callback"]
@@ -72,17 +72,9 @@ def test_sync_board_handler_uses_plugin_source_key():
     prepared = []
     jobs = build_jobs(context, prepare_run=lambda: prepared.append(1))
 
-    jobs[1].params_handler(None, {"board_key": "censored", "period": "daily"})
+    jobs[1].handler(None, {"board_key": "censored", "period": "daily"})
 
     assert prepared == [1]
     assert calls == [
         {"source_key": "javdb", "board_key": "censored", "period": "daily"}
     ]
-
-
-def test_format_stats_covers_returned_fields():
-    text = _format_stats(
-        {"total_targets": 3, "success_targets": 2, "failed_targets": 1}
-    )
-    assert "total_targets=3" in text
-    assert "failed_targets=1" in text

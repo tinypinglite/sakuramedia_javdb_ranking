@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from src.plugins import (
+    HOST_API_VERSION,
+    RANKING_SOURCE_EXTENSION_KEY,
     PluginContext,
     PluginExtension,
     PluginRegistration,
-    RANKING_SOURCE_EXTENSION_KEY,
 )
 
 from .boards import build_ranking_source
@@ -14,7 +15,7 @@ from .providers import PerRunProviderHolder
 from .settings import JavdbRankingSettings
 from .sync_jobs import build_jobs
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 PLUGIN_ID = "sakuramedia_javdb_ranking"
 DISPLAY_NAME = "SakuraMedia JavDB 排行榜"
 
@@ -38,7 +39,7 @@ def register(context: PluginContext) -> PluginRegistration:
         plugin_id=PLUGIN_ID,
         display_name=DISPLAY_NAME,
         version=__version__,
-        host_api_version=1,
+        host_api_version=HOST_API_VERSION,
         extensions=(
             PluginExtension(key=RANKING_SOURCE_EXTENSION_KEY, data=source),
         ),
