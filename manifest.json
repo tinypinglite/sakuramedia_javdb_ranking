@@ -1,8 +1,9 @@
 {
   "plugin_id": "sakuramedia_javdb_ranking",
   "display_name": "SakuraMedia JavDB 排行榜",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "host_api_version": 4,
   "requires_python": ">=3.10",
-  "author": "tinyping"
+  "author": "tinyping",
+  "release_api_url": "https://api.github.com/repos/tinypinglite/sakuramedia_javdb_ranking/releases/latest"
 }

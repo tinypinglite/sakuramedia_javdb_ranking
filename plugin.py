@@ -15,7 +15,7 @@ from .providers import PerRunProviderHolder
 from .settings import JavdbRankingSettings
 from .sync_jobs import build_jobs
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 PLUGIN_ID = "sakuramedia_javdb_ranking"
 DISPLAY_NAME = "SakuraMedia JavDB 排行榜"
 
