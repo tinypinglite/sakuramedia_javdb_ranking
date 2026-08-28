@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any
 
-from src.common.runtime_time import runtime_now
 from src.plugins import PluginRankingBoard, PluginRankingSource
 
 # TOP250 固定子榜；年份维度由 supported_periods_provider 动态补齐。
@@ -14,8 +14,7 @@ TOP250_START_YEAR = 2008
 
 
 def _current_year() -> int:
-    # 与宿主运行时区保持一致（原内置实现同为 runtime_now），避免元旦前后年份错位。
-    return runtime_now().year
+    return datetime.now().astimezone().year
 
 
 def top250_periods() -> tuple[str, ...]:
