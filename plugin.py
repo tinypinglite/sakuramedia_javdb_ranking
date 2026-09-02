@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from src.plugins import (
     HOST_API_VERSION,
     RANKING_SOURCE_EXTENSION_KEY,
@@ -15,7 +18,9 @@ from .providers import PerRunProviderHolder
 from .settings import JavdbRankingSettings
 from .sync_jobs import build_jobs
 
-__version__ = "0.1.3"
+__version__ = json.loads(
+    Path(__file__).with_name("manifest.json").read_text(encoding="utf-8")
+)["version"]
 PLUGIN_ID = "sakuramedia_javdb_ranking"
 DISPLAY_NAME = "SakuraMedia JavDB 排行榜"
 
