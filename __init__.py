@@ -1,3 +1,4 @@
 from .plugin import register
+from .settings import JavdbRankingSettings
 
-__all__ = ["register"]
+__all__ = ["JavdbRankingSettings", "register"]

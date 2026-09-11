@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class JavdbRankingSettings(BaseModel):
@@ -6,8 +6,8 @@ class JavdbRankingSettings(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    javdb_username: str | None = None
-    javdb_password: str | None = None
+    javdb_username: str | None = Field(default=None, title="JavDB 用户名")
+    javdb_password: str | None = Field(default=None, title="JavDB 密码", json_schema_extra={"format": "password"})
 
     @field_validator("javdb_username", "javdb_password")
     @classmethod
