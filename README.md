@@ -47,5 +47,11 @@ zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须
 - 定时任务：`sakuramedia_javdb_ranking_sync`
   （`aps sync-javdb-ranking`），全量同步，默认每天 01:45。
 - 手动任务：`sakuramedia_javdb_ranking_sync_board`
-  （`aps sync-javdb-ranking-board`），参数 `board_key` / `period`，
+  （`aps sync-javdb-ranking-board`），参数 `board_key` / `period` 均必填，
   可经任务中心 HTTP 手动触发。
+  任务中心表单中两者为中文下拉选择，`period` 选项随 `board_key` 联动；
+  CLI/HTTP 直接调用时取值：`playback_all`（热播）/ `playback_high_score`（高评分）/
+  `censored`（有码）/ `uncensored`（无码）/ `fc2`（FC2）支持
+  `daily`（日榜）/ `weekly`（周榜）/ `monthly`（月榜）；
+  `top250`（TOP250）支持 `all`（全部）/ `uncensored`（无码）/ `censored`（有码）/
+  `fc2`（FC2）及年份（如 `2025`）。

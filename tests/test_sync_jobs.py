@@ -2,12 +2,21 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from sakuramedia_javdb_ranking.boards import top250_periods
 from sakuramedia_javdb_ranking.sync_jobs import (
     SyncBoardParams,
     build_jobs,
 )
 
 from src.plugins import PluginContext
+
+_STANDARD_BOARD_KEYS = (
+    "playback_all",
+    "playback_high_score",
+    "censored",
+    "uncensored",
+    "fc2",
+)
 
 
 def _context() -> PluginContext:
@@ -32,12 +41,44 @@ def test_build_jobs_declares_cron_and_manual_task():
 
 def test_sync_board_params_validation():
     assert SyncBoardParams(board_key="censored", period="daily").period == "daily"
-    assert SyncBoardParams(board_key="top250").model_dump() == {
+    assert SyncBoardParams(board_key="top250", period="all").model_dump() == {
         "board_key": "top250",
-        "period": None,
+        "period": "all",
     }
     with pytest.raises(ValidationError):
-        SyncBoardParams(board_key="Bad-Key")
+        SyncBoardParams(board_key="Bad-Key", period="daily")
+    with pytest.raises(ValidationError):
+        SyncBoardParams(board_key="censored")
+    with pytest.raises(ValidationError):
+        SyncBoardParams(board_key="censored", period="")
+
+
+def test_sync_board_params_schema_exposes_linked_options():
+    schema = SyncBoardParams.model_json_schema()
+    properties = schema["properties"]
+
+    board_options = properties["board_key"]["oneOf"]
+    assert [option["const"] for option in board_options] == [
+        *_STANDARD_BOARD_KEYS,
+        "top250",
+    ]
+    assert board_options[0]["title"] == "热播"
+    assert all("x-when" not in option for option in board_options)
+
+    period_schema = properties["period"]
+    assert period_schema["x-options-by"] == "board_key"
+    period_options = {option["const"]: option for option in period_schema["oneOf"]}
+    assert set(period_options) == {"daily", "weekly", "monthly", *top250_periods()}
+    for period, title in (("daily", "日榜"), ("weekly", "周榜"), ("monthly", "月榜")):
+        assert period_options[period]["title"] == title
+        assert period_options[period]["x-when"] == list(_STANDARD_BOARD_KEYS)
+    assert period_options["all"]["title"] == "全部"
+    assert period_options["all"]["x-when"] == ["top250"]
+    for year in (period for period in top250_periods() if period.isdigit()):
+        assert period_options[year]["title"] == f"{year}年"
+        assert period_options[year]["x-when"] == ["top250"]
+
+    assert schema["required"] == ["board_key", "period"]
 
 
 def test_sync_all_handler_prepares_run_and_passes_progress():

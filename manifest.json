@@ -1,7 +1,7 @@
 {
   "plugin_id": "sakuramedia_javdb_ranking",
   "display_name": "SakuraMedia JavDB 排行榜",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "host_api_version": 4,
   "settings_model": "JavdbRankingSettings",
   "requires_python": ">=3.10",
