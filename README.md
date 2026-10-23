@@ -55,3 +55,9 @@ zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须
   `daily`（日榜）/ `weekly`（周榜）/ `monthly`（月榜）；
   `top250`（TOP250）支持 `all`（全部）/ `uncensored`（无码）/ `censored`（有码）/
   `fc2`（FC2）及年份（如 `2025`）。
+
+## License
+
+本项目采用 [PolyForm Noncommercial License 1.0.0](./LICENSE)，仅允许非商业用途。
+
+Copyright (C) 2026 tinypinglite
