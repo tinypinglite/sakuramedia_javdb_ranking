@@ -5,7 +5,7 @@
     "zh-CN": "SakuraMedia JavDB 排行榜",
     "en": "SakuraMedia JavDB Rankings"
   },
-  "version": "0.1.5",
+  "version": "0.1.6",
   "host_api_version": 12,
   "settings_model": "JavdbRankingSettings",
   "requires_python": ">=3.10",
