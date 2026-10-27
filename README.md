@@ -44,13 +44,21 @@ zip 包要求：插件根内容直接打 zip，不含外层目录，根目录须
 
 ## 多语言
 
-本插件声明 Host API 12，支持 `zh-CN` / `en`：
+本插件声明 Host API 12，支持 `zh-CN` / `en`，也是宿主插件 i18n 的样板：
 
-- 静态文案（插件名、榜单名、任务说明、设置/参数标题）来自 `i18n/zh-CN.json`、
-  `i18n/en.json`，并通过 manifest 的 `display_name_i18n` 与代码中的 `*_i18n`
-  字段提供给宿主。
-- 任务开始进度通过 `context.i18n.t()` 按当前任务语言输出。
-- 新增语言时，在 `i18n/` 增加同名 JSON，并补 manifest 的 `display_name_i18n`。
+- 语言包放在 `i18n/zh-CN.json`、`i18n/en.json`；`translations.py` 只负责在
+  插件导入时读取它们并生成静态 `*_i18n` 字典。
+- 插件名：`manifest.json` 的 `display_name_i18n` +
+  `PluginRegistration.display_name_i18n`。
+- 榜单名：`PluginRankingSource.name_i18n` / `PluginRankingBoard.name_i18n`。
+- 任务说明：`JobDefinition.cli_help_i18n`；任务参数 JSON Schema 的
+  `title_i18n` / `description_i18n`。
+- 设置项标题：Pydantic `Field` 的 `json_schema_extra={"title_i18n": ...}`。
+- 运行时文本（任务进度、通知）：`context.i18n.t(key, default=..., **params)`。
+- 元数据插件用 `PluginRegistration.display_name_i18n`，媒体 Provider 插件用
+  `MediaProviderBundle.display_name_i18n`；两者都是可选字段，缺失时回退原文。
+- 新增语言时，在 `i18n/` 增加同名 JSON，并补 manifest / registration 的
+  `display_name_i18n`。
 
 ## 任务
 
