@@ -5,7 +5,12 @@
     "zh-CN": "SakuraMedia JavDB 排行榜",
     "en": "SakuraMedia JavDB Rankings"
   },
-  "version": "0.1.6",
+  "description": "提供 JavDB 热播、高评分、有码、无码、FC2 和 TOP250 榜单，并注册定时同步任务。",
+  "description_i18n": {
+    "zh-CN": "提供 JavDB 热播、高评分、有码、无码、FC2 和 TOP250 榜单，并注册定时同步任务。",
+    "en": "Provides JavDB trending, top-rated, censored, uncensored, FC2 and TOP250 charts, and registers scheduled sync jobs."
+  },
+  "version": "0.1.7",
   "host_api_version": 12,
   "settings_model": "JavdbRankingSettings",
   "requires_python": ">=3.10",
