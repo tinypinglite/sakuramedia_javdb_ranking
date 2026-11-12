@@ -1,0 +1,20 @@
+{
+  "plugin_id": "sakuramedia_javdb_ranking",
+  "display_name": "SakuraMedia JavDB 排行榜",
+  "display_name_i18n": {
+    "zh-CN": "SakuraMedia JavDB 排行榜",
+    "en": "SakuraMedia JavDB Rankings"
+  },
+  "description": "提供 JavDB 热播、高评分、有码、无码、FC2 免费榜及内置 TOP250 榜单，并注册定时同步任务。",
+  "description_i18n": {
+    "zh-CN": "提供 JavDB 热播、高评分、有码、无码、FC2 免费榜及内置 TOP250 榜单，并注册定时同步任务。",
+    "en": "Provides JavDB trending, top-rated, censored, uncensored and FC2 charts plus bundled TOP250 lists, and registers scheduled sync jobs."
+  },
+  "version": "0.1.7",
+  "host_api_version": 18,
+  "settings_model": "JavdbRankingSettings",
+  "requires_python": ">=3.10,<3.11",
+  "dependencies": [],
+  "author": "tinyping",
+  "release_api_url": "https://api.github.com/repos/tinypinglite/sakuramedia_javdb_ranking/releases/latest"
+}
